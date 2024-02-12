@@ -1,4 +1,4 @@
-using HackerNews.API.Integration;
+using HackerNews.API.Service;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HackerNews.API.Controllers;
@@ -7,15 +7,11 @@ namespace HackerNews.API.Controllers;
 [Produces("application/json")]
 public class StoryController : ControllerBase
 {
-    private readonly ILogger<StoryController> _logger;
-    private readonly IHackerNewsService _hackerNewsService;
+    private readonly IStoryService _storyService;
 
-    public StoryController(
-        ILogger<StoryController> logger,
-        IHackerNewsService hackerNewsService)
+    public StoryController(IStoryService storyService)
     {
-        _logger = logger;
-        _hackerNewsService = hackerNewsService;
+        _storyService = storyService;
     }
 
     [HttpGet]
@@ -23,28 +19,9 @@ public class StoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> TopStories(int top, int pageSize, int pageNumber)
+    public async Task<IActionResult> TopStories(int top, int pageSize = 10, int pageNumber = 1)
     {
-        var topStories = await _hackerNewsService.GetBestStoriesAsync();
-
-
-        topStories = topStories.Take(top).ToList();
-
-
-        var tasks = topStories.Select(item => _hackerNewsService.GetStoryByIdAsync(item));
-        var storyDetails = await Task.WhenAll(tasks);
-
+        var storyDetails = await _storyService.GetTopStories(top, pageSize, pageNumber);
         return Ok(storyDetails);
     }
-
-    [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetStory(long Id)
-    {
-        var topStories = await _hackerNewsService.GetStoryByIdAsync(Id);
-        return Ok(topStories);
-    }
-
 }

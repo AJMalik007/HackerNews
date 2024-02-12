@@ -1,4 +1,5 @@
 using HackerNews.API.Integration;
+using HackerNews.API.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,8 @@ builder.Services.AddHttpClient("HackerNewsApi", client =>
     //TODO: Add the base address for the HackerNewsApi
     client.BaseAddress = new Uri("https://hacker-news.firebaseio.com");
 });
+builder.Services.AddScoped<IStoryService, StoryService>();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<IHackerNewsService, HackerNewsService>();
 

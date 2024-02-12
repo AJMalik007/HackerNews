@@ -50,7 +50,7 @@ public class HackerNewsService : IHackerNewsService
         }
     }
 
-    public async Task<StoryDetailResponse> GetStoryByIdAsync(long id)
+    public async Task<TopStoriesResponse> GetStoryByIdAsync(long id)
     {
         try
         {
@@ -68,7 +68,21 @@ public class HackerNewsService : IHackerNewsService
                 _logger.LogInformation($"Get the response from HackerNewsApi {resultContent}");
 
                 var propertyParser = JsonConvert.DeserializeObject<StoryDetailResponse>(resultContent);
-                return propertyParser;
+
+                if (propertyParser != null)
+                {
+                    var story = new TopStoriesResponse
+                    {
+                        Title = propertyParser.Title,
+                        Uri = propertyParser.Url,
+                        PostedBy = propertyParser.By,
+                        Time = propertyParser.IsoTime,
+                        Score = propertyParser.Score,
+                        CommentCount = propertyParser.commentCounts
+                    };
+                    return story;
+                }
+                return null;
             }
             else
             {
