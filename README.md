@@ -10,6 +10,41 @@ Follow these detailed steps to run the application:
 2. **Build the Project**: Navigate to the menu bar, click on `Build` and then select `Build Solution`. Wait for the build to complete successfully.
 3. **Run the Application**: To start the application, go to the menu bar, click on `Debug`, and then select `Start Debugging`.
 
+### Fetching Top N Best Stories
+
+1. **Access Swagger UI**: Launch your ASP.NET Core Web API application, and navigate to [Swagger UI](https://localhost:7093/swagger/index.html).
+
+2. **Explore API Documentation**: Swagger UI provides comprehensive documentation of your API endpoints. Locate the endpoint for fetching the top N best stories.
+
+3. **Specify Parameters**: Within the Swagger UI interface, specify the parameters for fetching the top stories. Enter values for `top`, `pageSize`, and `pageNumber` as required.
+
+4. **Submit Request**: Click the "Try it out" button to submit the request to the API.
+
+5. **Review Response**: Swagger UI will display the response returned by the API. You'll receive a JSON array containing the top N best stories, each with properties like `title`, `uri`, `postedBy`, `time`, `score`, and `commentCount`.
+
+    ```json
+    [
+        {
+            "title": "I designed a cube that balances itself on a corner",
+            "uri": "https://willempennings.nl/balancing-cube/",
+            "postedBy": "dutchkiwifruit",
+            "time": "2024-02-11T16:36:58+00:00",
+            "score": 2390,
+            "commentCount": 94
+        },
+        {
+            "title": "Almost every infrastructure decision I endorse or regret",
+            "uri": "https://cep.dev/posts/every-infrastructure-decision-i-endorse-or-regret-after-4-years-running-infrastructure-at-a-startup/",
+            "postedBy": "slyall",
+            "time": "2024-02-09T11:05:39+00:00",
+            "score": 1148,
+            "commentCount": 79
+        }
+    ]
+    ```
+
+6. **Process Response**: Utilize the received JSON response as needed in your application. You may display the stories, extract specific information, or perform further operations.
+
 ## 📚 Assumptions
 
 For this project, no assumptions have been made as the project requirements were clear and concise.
