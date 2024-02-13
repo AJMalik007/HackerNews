@@ -15,85 +15,58 @@ public class HackerNewsService : IHackerNewsService
         _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
-
     public async Task<List<long>> GetBestStoriesAsync()
     {
-        try
-        {
-            var httpClient = _httpClientFactory.CreateClient("HackerNewsApi");
-            _logger.LogInformation("Client Created Successfully");
-
-            var uri = $"/v0/beststories.json";
-
-            var result = await httpClient.GetAsync(uri);
-
-            if (result.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Get request to ELMS successful");
-
-                string resultContent = await result.Content.ReadAsStringAsync();
-                _logger.LogInformation($"Get the response from ELMS {resultContent}");
-
-                var propertyParser = JsonConvert.DeserializeObject<List<long>>(resultContent);
-                return propertyParser;
-            }
-            else
-            {
-                _logger.LogError("Get request to HackerNewsApi failed");
-                throw new Exception("Get request to HackerNewsApi failed");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw new Exception(ex.Message);
-        }
+        var uri = $"/v0/beststories.json";
+        var resultContent = await SendRequestAsync(uri);
+        return JsonConvert.DeserializeObject<List<long>>(resultContent);
     }
 
     public async Task<TopStoriesResponse> GetStoryByIdAsync(long id)
     {
+        var uri = $"/v0/item/{id}.json";
+        var resultContent = await SendRequestAsync(uri);
+        var propertyParser = JsonConvert.DeserializeObject<StoryDetailResponse>(resultContent);
+
+        if (propertyParser != null)
+        {
+            return new TopStoriesResponse
+            {
+                Title = propertyParser.Title,
+                Uri = propertyParser.Url,
+                PostedBy = propertyParser.By,
+                Time = propertyParser.IsoTime,
+                Score = propertyParser.Score,
+                CommentCount = propertyParser.commentCounts
+            };
+        }
+        return null;
+    }
+
+    private async Task<string> SendRequestAsync(string uri)
+    {
         try
         {
             var httpClient = _httpClientFactory.CreateClient("HackerNewsApi");
-            _logger.LogInformation("Client Created Successfully");
-
-            var uri = $"/v0/item/{id}.json";
-
+            _logger.LogInformation($"Sending request to {uri}");
             var result = await httpClient.GetAsync(uri);
+
             if (result.IsSuccessStatusCode)
             {
-                _logger.LogInformation("Get request to HackerNewsApi successful");
-
-                string resultContent = await result.Content.ReadAsStringAsync();
-                _logger.LogInformation($"Get the response from HackerNewsApi {resultContent}");
-
-                var propertyParser = JsonConvert.DeserializeObject<StoryDetailResponse>(resultContent);
-
-                if (propertyParser != null)
-                {
-                    var story = new TopStoriesResponse
-                    {
-                        Title = propertyParser.Title,
-                        Uri = propertyParser.Url,
-                        PostedBy = propertyParser.By,
-                        Time = propertyParser.IsoTime,
-                        Score = propertyParser.Score,
-                        CommentCount = propertyParser.commentCounts
-                    };
-                    return story;
-                }
-                return null;
+                var resultContent = await result.Content.ReadAsStringAsync();
+                _logger.LogInformation($"Received response from {uri}: {resultContent}");
+                return resultContent;
             }
             else
             {
-                _logger.LogError("Get request to HackerNewsApi failed");
-                throw new Exception("Get request to HackerNewsApi failed");
+                _logger.LogError($"Request to {uri} failed with status code {result.StatusCode}");
+                throw new HttpRequestException($"Request to {uri} failed with status code {result.StatusCode}");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
-            throw new Exception(ex.Message);
+            _logger.LogError(ex, $"Error in SendRequestAsync: {ex.Message}");
+            throw;
         }
     }
 }
