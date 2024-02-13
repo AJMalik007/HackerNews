@@ -18,7 +18,7 @@ public class StoryDetailResponse
         set
         {
             _time = value;
-            IsoTime = DateTimeOffset.FromUnixTimeSeconds(_time).ToString("o");
+            IsoTime = DateTimeOffset.FromUnixTimeSeconds(_time).ToString("yyyy-MM-ddTHH:mm:ssK");
         }
     }
     public string IsoTime { get; private set; }
