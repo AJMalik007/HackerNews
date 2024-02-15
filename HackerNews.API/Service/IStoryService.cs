@@ -14,5 +14,5 @@ public interface IStoryService
     /// <param name="pageSize">The size of the page to retrieve.</param>
     /// <param name="pageNumber">The number of the page to retrieve.</param>
     /// <returns>A list of top stories.</returns>
-    Task<List<TopStoriesResponse>> GetTopStories(int top, int pageSize, int pageNumber);
+    Task<List<TopStoriesResponse>> GetTopStories(int top, string titleFilter = null);
 }

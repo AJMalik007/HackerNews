@@ -19,10 +19,12 @@ public class StoryService : IStoryService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<List<TopStoriesResponse>> GetTopStories(int top, int pageSize, int pageNumber)
+    public async Task<List<TopStoriesResponse>> GetTopStories(int top, string titleFilter = null)
     {
         const string cacheKey = "TopStories";
+        const string cacheKeyAllStories = "AllStories";
         List<long> topStories;
+        List<TopStoriesResponse> allStories;
 
         // Try to get the top stories from the cache
         if (!_memoryCache.TryGetValue(cacheKey, out topStories))
@@ -46,18 +48,32 @@ public class StoryService : IStoryService
             _logger.LogInformation("Top stories found in cache.");
         }
 
+        // Try to get all stories from the cache
+        if (!_memoryCache.TryGetValue(cacheKeyAllStories, out allStories))
+        {
+            // Fetch story details for each story in parallel
+            var tasks = topStories.Select(_hackerNewsService.GetStoryByIdAsync);
+            allStories = (await Task.WhenAll(tasks)).ToList();
+
+            // Set the cache options
+            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(10)); // Cache for 10 mins
+
+            // Save all stories in the cache
+            _memoryCache.Set(cacheKeyAllStories, allStories, cacheEntryOptions);
+        }
+
+        // Filter stories by title if filter is provided
+        if (!string.IsNullOrEmpty(titleFilter))
+        {
+            allStories = allStories.Where(s => s.Title.Contains(titleFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         // Take the top stories first
         topStories = topStories.Take(top).ToList();
 
-        // Then apply pagination on the top stories
-        var paginatedStories = topStories.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+        _logger.LogInformation($"Fetched details for {allStories.Count} stories.");
 
-        // Fetch story details for each story in parallel
-        var tasks = paginatedStories.Select(_hackerNewsService.GetStoryByIdAsync);
-        var storyDetails = await Task.WhenAll(tasks);
-
-        _logger.LogInformation($"Fetched details for {storyDetails.Length} stories.");
-
-        return storyDetails.ToList();
+        return allStories;
     }
 }

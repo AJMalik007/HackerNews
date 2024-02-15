@@ -20,17 +20,12 @@ public class StoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetTopStories(int top, int pageSize = 10, int pageNumber = 1)
+    public async Task<IActionResult> GetTopStories(int top, string titleFilter = null)
     {
-        if (top <= 0 || pageSize <= 0 || pageNumber <= 0)
-        {
-            _logger.LogWarning("Invalid input parameters in GetTopStories.");
-            return BadRequest("Invalid input parameters.");
-        }
 
         try
         {
-            var storyDetails = await _storyService.GetTopStories(top, pageSize, pageNumber);
+            var storyDetails = await _storyService.GetTopStories(top, titleFilter);
             return Ok(storyDetails);
         }
         catch (Exception ex)
