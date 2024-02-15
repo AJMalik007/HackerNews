@@ -20,7 +20,7 @@ public class StoryController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetTopStories(int top, string titleFilter = null)
+    public async Task<IActionResult> GetTopStories(int top, string? titleFilter)
     {
 
         try
