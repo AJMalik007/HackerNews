@@ -1,4 +1,5 @@
 ﻿using HackerNews.API.Model;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace HackerNews.API.Integration;
@@ -7,24 +8,27 @@ public class HackerNewsService : IHackerNewsService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<HackerNewsService> _logger;
+    private readonly HackerApiOption _options;
 
     public HackerNewsService(
         IHttpClientFactory httpClientFactory,
-        ILogger<HackerNewsService> logger)
+        ILogger<HackerNewsService> logger,
+        IOptions<HackerApiOption> options)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _options = options.Value;
     }
     public async Task<List<long>> GetBestStoriesAsync()
     {
-        var uri = $"/v0/beststories.json";
+        var uri = _options.BestStories;
         var resultContent = await SendRequestAsync(uri);
         return JsonConvert.DeserializeObject<List<long>>(resultContent);
     }
 
     public async Task<TopStoriesResponse> GetStoryByIdAsync(long id)
     {
-        var uri = $"/v0/item/{id}.json";
+        var uri = string.Format(_options.StoryDetail, id);
         var resultContent = await SendRequestAsync(uri);
         var propertyParser = JsonConvert.DeserializeObject<StoryDetailResponse>(resultContent);
 
